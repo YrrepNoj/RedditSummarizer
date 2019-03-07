@@ -1,5 +1,6 @@
 import requests
 import os
+from summarization import Summarization
 
 apiKey = os.environ['SMMRY_API_KEY']
 endpoint = "http://api.smmry.com/"
@@ -28,7 +29,7 @@ def summerizeURL(articalURL):
     smmry_dict['sm_api_content'] = smmry_dict['sm_api_content'].replace('[BREAK]', '\n')
     smmry_dict['sm_api_content'] = smmry_dict['sm_api_content'].strip()
 
-    return smmry_dict
+    return Summarization(smmry_dict)
 
 
 def summarizeText(text):
@@ -40,11 +41,10 @@ def summarizeText(text):
     smmry_dict = response.json()
 
     if smmry_dict.get('sm_api_error'):
-        print('Received api error: ' + smmry_dict.get('sm_api_error'))
+        print('Received api error: ' + str(smmry_dict))
         return
 
-    smmry_dict['sm_api_content'] = smmry_dict['sm_api_content'].replace('[BREAK]', '\n')
+    smmry_dict['sm_api_content'] = smmry_dict['sm_api_content'].replace('[BREAK]', '\n\n')
     smmry_dict['sm_api_content'] = smmry_dict['sm_api_content'].strip()
 
-    return smmry_dict
-
+    return Summarization(smmry_dict)

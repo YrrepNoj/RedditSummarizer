@@ -21,21 +21,24 @@ redditClient = praw.Reddit(client_id=redditClientID,
                            username=redditUsername)
 
 logging.info("Logged in as user (%s).." % redditUsername)
-for submission in redditClient.redditor(redditUsername).upvoted(limit=5):
+
+bigString = ""
+for submission in redditClient.redditor(redditUsername).upvoted(limit=10):
     if submission.id == lastPostSummerized:
         break
 
-    if submission.is_self and len(submission.selftext) > 1000:
+    if submission.is_self and len(submission.selftext.split()) > 400:
+        print(len(submission.selftext.split()))
         logging.info("Summarizing a selfpost")
-        summary = smmry_wrapper.summarizeText(submission.selftext)
+        summarization = smmry_wrapper.summarizeText(submission.selftext)
 
-    else:
+    elif not submission.is_self:
         logging.info("summarizing a linkpost")
-        summary = smmry_wrapper.summerizeURL(submission.url)
+        summarization = smmry_wrapper.summerizeURL(submission.url)
 
-    if(summary):
+    if(summarization):
         print(submission.title)
-        print(summary['sm_api_content'])
+        print(summarization.summarizationMap)
     else:
         logging.warning("Unable to summarize submission %s", submission.title)
 
