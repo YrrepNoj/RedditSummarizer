@@ -2,44 +2,80 @@ import praw
 import logging.config
 import os
 import smmry_wrapper
+import pprint
 
 logging.basicConfig(filename="app.log", filemode="w", format="%(asctime)s - %(filename)s - %(levelname)s - %(message)s",
                     level=logging.INFO, datefmt="%d-%b-%y %H:%M:%S")
+def getRedditClient():
+    redditUsername = os.environ.get('REDDIT_USERNAME')
+    redditPassword = os.environ.get('REDDIT_PASSWORD')
+    redditUserAgent = os.environ.get('REDDIT_USER_AGENT')
+    redditClientSecret = os.environ.get('REDDIT_CLIENT_SECRET')
+    redditClientID = os.environ.get('REDDIT_CLIENT_ID')
 
-redditUsername = os.environ.get('REDDIT_USERNAME')
-redditPassword = os.environ.get('REDDIT_PASSWORD')
-redditUserAgent = os.environ.get('REDDIT_USER_AGENT')
-redditClientSecret = os.environ.get('REDDIT_CLIENT_SECRET')
-redditClientID = os.environ.get('REDDIT_CLIENT_ID')
-lastPostSummerized = os.environ.get('REDDIT_LAST_POST')
+    logging.info("Logged in as user (%s).." % redditUsername)
+    redditClient = praw.Reddit(client_id=redditClientID,
+                               client_secret=redditClientSecret,
+                               password=redditPassword,
+                               user_agent=redditUserAgent,
+                               username=redditUsername)
 
+    return redditClient
 
-redditClient = praw.Reddit(client_id=redditClientID,
-                           client_secret=redditClientSecret,
-                           password=redditPassword,
-                           user_agent=redditUserAgent,
-                           username=redditUsername)
+#TODO: Add remaining api calls to the end of the digest
+def processSavedRedditSubmission(redditClient):
 
-logging.info("Logged in as user (%s).." % redditUsername)
+    digest = ""
+    unsummarizedSubmissions = []
+    for submission in redditClient.redditor(redditClient.user.me().name).saved(limit=15):
 
-bigString = ""
-for submission in redditClient.redditor(redditUsername).upvoted(limit=10):
-    if submission.id == lastPostSummerized:
-        break
+        if isinstance(submission, praw.models.Submission):
+            summarization = None
 
-    if submission.is_self and len(submission.selftext.split()) > 400:
-        print(len(submission.selftext.split()))
-        logging.info("Summarizing a selfpost")
-        summarization = smmry_wrapper.summarizeText(submission.selftext)
+            submission.unsave();
+            submission.save("ReadLater")
 
-    elif not submission.is_self:
-        logging.info("summarizing a linkpost")
-        summarization = smmry_wrapper.summerizeURL(submission.url)
+            if submission.is_self and len(submission.selftext.split()) > 400:
+                logging.info("Summarizing a selfpost")
+                summarization = smmry_wrapper.summarizeText(submission.selftext)
 
-    if(summarization):
-        print(submission.title)
-        print(summarization.summarizationMap)
-    else:
-        logging.warning("Unable to summarize submission %s", submission.title)
+            elif not submission.is_self:
+                logging.info("summarizing a linkpost")
+                summarization = smmry_wrapper.summerizeURL(submission.url)
+            else:
+                # A selfpost that was not long enough for us to consider summarizing
+                unsummarizedSubmissions.append(submission)
 
-    print("\n\n")
+            if(summarization):
+                if(summarization.getErrorCode()):
+                    logging.warning("Unable to summarize submission %s : %s. Error Code: %s",
+                                    submission.shortlink, submission.title, summarization.getErrorCode())
+                    unsummarizedSubmissions.append(submission)
+                    continue
+                digest += "Reddit Submission Title: " + submission.title
+                articalTitle = summarization.getTitle()
+                if articalTitle:
+                    digest += "\nArticle Title: " + articalTitle
+                percentageReduced = summarization.getPercentageReduced()
+                if percentageReduced:
+                    digest += "\nText Reduced By: " + percentageReduced
+                summarizedText = summarization.getSummarizedText()
+
+                digest += "\nReddit Link: " + submission.shortlink
+
+                if(not submission.is_self):
+                    digest += "\nArticle Link: " + submission.url
+
+                if summarizedText:
+                    sentences = summarizedText.split('\n ')
+                    digest += "\n" + summarizedText
+                digest += "\n" + "---------------------------------------------------------------\n\n"
+            else:
+                logging.warning("Unable to summarize submission %s", submission.title)
+
+    # Add all of the unsummarized submissions to the end of the list
+    if len(unsummarizedSubmissions) > 0:
+        digest += "\n\n--------------Unsummarized Submissions--------------"
+        for submission in unsummarizedSubmissions:
+            digest += "\n" + submission.title + "  :  " + submission.shortlink
+    return digest

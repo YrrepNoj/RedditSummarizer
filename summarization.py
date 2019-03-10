@@ -7,19 +7,23 @@ class Summarization:
         self.summarizationMap = summarizationMap
 
     def getSummarizedText(self):
-        return self.summarizationMap['sm_api_content']
+        if 'sm_api_content' in self.summarizationMap.keys():
+            return self.summarizationMap['sm_api_content']
 
     def getTitle(self):
-        return self.summarizationMap['sm_api_title']
+        if 'sm_api_title' in self.summarizationMap.keys():
+            return self.summarizationMap['sm_api_title']
 
     def getAPIRequestsRemaining(self):
         # 'sm_api_limitation': 'Waited 0 extra seconds due to API Free mode, 94 requests left to make for today.'
-        splitString = self.summarizationMap['sm_api_limitation'].split(',')
-        splitString = splitString[1].split(' ')
-        return splitString[1]
+        if 'sm_api_limitation' in self.summarizationMap.keys():
+            splitString = self.summarizationMap['sm_api_limitation'].split(',')
+            splitString = splitString[1].split(' ')
+            return splitString[1]
 
     def getPercentageReduced(self):
-        return self.summarizationMap['sm_api_content_reduced']
+        if 'sm_api_content_reduced' in self.summarizationMap.keys():
+            return self.summarizationMap['sm_api_content_reduced']
 
     def getAPIMessage(self):
         if 'sm_api_message' in self.summarizationMap.keys():

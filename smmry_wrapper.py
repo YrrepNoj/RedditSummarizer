@@ -23,10 +23,10 @@ def summerizeURL(articalURL):
     smmry_dict = response.json()
 
     if smmry_dict.get('sm_api_error'):
-        print('Received api error: ' + str(smmry_dict))
-        return
+        return Summarization(smmry_dict)
 
-    smmry_dict['sm_api_content'] = smmry_dict['sm_api_content'].replace('[BREAK]', '\n')
+    smmry_dict['sm_api_content'] = smmry_dict['sm_api_content'].replace('[BREAK] ', '\n\n* ')
+    smmry_dict['sm_api_content'] = smmry_dict['sm_api_content'].replace('[BREAK]', '')
     smmry_dict['sm_api_content'] = smmry_dict['sm_api_content'].strip()
 
     return Summarization(smmry_dict)
@@ -44,7 +44,8 @@ def summarizeText(text):
         print('Received api error: ' + str(smmry_dict))
         return
 
-    smmry_dict['sm_api_content'] = smmry_dict['sm_api_content'].replace('[BREAK]', '\n\n')
+    smmry_dict['sm_api_content'] = smmry_dict['sm_api_content'].replace('[BREAK] ', '\n\n* ')
+    smmry_dict['sm_api_content'] = smmry_dict['sm_api_content'].replace('[BREAK]', '')
     smmry_dict['sm_api_content'] = smmry_dict['sm_api_content'].strip()
 
     return Summarization(smmry_dict)
