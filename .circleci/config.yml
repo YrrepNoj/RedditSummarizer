@@ -6,21 +6,11 @@ version: 2
 jobs:
   build:
     docker:
-      # specify the version you desire here
-      # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
       - image: circleci/python:3.6.1
-
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/postgres:9.4
-
-    working_directory: ~/repo
+    working_directory: ~/RedditSummarizer
 
     steps:
       - checkout
-
-      # Download and cache dependencies
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "requirements.txt" }}
@@ -39,30 +29,22 @@ jobs:
             - ./venv
           key: v1-dependencies-{{ checksum "requirements.txt" }}
 
-      # run tests!
-      # this example uses Django's built-in test-runner
-      # other common Python testing frameworks include pytest and nose
-      # https://pytest.org
-      # https://nose.readthedocs.io
-      # - run:
-      #    name: run tests
-      #    command: |
-      #      . venv/bin/activate
-      #      python manage.py test
-
-      # - store_artifacts:
-      #    path: test-reports
-      #    destination: test-reports
-
-  deploy:
-    machine:
-      enabled: true
-    working_directory: ~/repo
-    steps:
       - add_ssh_keys:
           fingerprints:
             - "2e:8a:ec:cc:3b:34:9b:7c:03:3e:35:f3:00:fc:ac:f5"
       - run:
           name: Deploy Over SSH
           command: |
-            scp -r ~/repo/ ubuntu@18.233.158.18:RedditSummarizer
+            scp -r -o StrictHostKeyChecking=no ~/RedditSummarizer ubuntu@18.233.158.18:
+
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - build
+#      - deploy:
+#          requires:
+#            - build
+#          # filters:
+#            # branches:
+#              # only: master # only deploys master branch
