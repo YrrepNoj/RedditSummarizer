@@ -53,3 +53,16 @@ jobs:
       # - store_artifacts:
       #    path: test-reports
       #    destination: test-reports
+
+  deploy:
+    machine:
+      enabled: true
+    working_directory: ~/repo
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "2e:8a:ec:cc:3b:34:9b:7c:03:3e:35:f3:00:fc:ac:f5"
+      - run:
+          name: Deploy Over SSH
+          command: |
+            scp -r ~/repo/ ubuntu@18.233.158.18:RedditSummarizer
