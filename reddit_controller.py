@@ -2,7 +2,6 @@ import praw
 import logging.config
 import os
 import smmry_wrapper
-import pprint
 
 logging.basicConfig(filename="app.log", filemode="w", format="%(asctime)s - %(filename)s - %(levelname)s - %(message)s",
                     level=logging.INFO, datefmt="%d-%b-%y %H:%M:%S")
@@ -19,25 +18,29 @@ def getRedditClient():
                                password=redditPassword,
                                user_agent=redditUserAgent,
                                username=redditUsername)
-
     return redditClient
 
 #TODO: Add remaining api calls to the end of the digest
-def processSavedRedditSubmission(redditClient):
+def processSavedRedditSubmission(redditClient, recentlyViewed):
 
     digest = ""
+    touchedSubmissions = []
     unsummarizedSubmissions = []
-    for submission in redditClient.redditor(redditClient.user.me().name).saved(limit=15):
+    for submission in redditClient.redditor(redditClient.user.me().name).saved(limit=25):
+        if submission.id in recentlyViewed:
+            logging.info("Reached a submission that we have processed before. Stopping now.")
+            break
 
+        touchedSubmissions.append(submission.id)
         if isinstance(submission, praw.models.Submission):
             summarization = None
 
-            submission.unsave();
+            submission.unsave()
             submission.save("ReadLater")
 
             if submission.is_self and len(submission.selftext.split()) > 400:
                 logging.info("Summarizing a selfpost")
-                summarization = smmry_wrapper.summarizeText(submission.selftext)
+                summarization = smmry_wrapper.summerizeURL(submission.url)
 
             elif not submission.is_self:
                 logging.info("summarizing a linkpost")
@@ -78,4 +81,4 @@ def processSavedRedditSubmission(redditClient):
         digest += "\n\n--------------Unsummarized Submissions--------------"
         for submission in unsummarizedSubmissions:
             digest += "\n" + submission.title + "  :  " + submission.shortlink
-    return digest
+    return digest, touchedSubmissions
