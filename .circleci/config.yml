@@ -35,7 +35,7 @@ jobs:
       - run:
           name: Deploy Over SSH
           command: |
-            scp -r -o StrictHostKeyChecking=no ~/RedditSummarizer ubuntu@18.233.158.18:
+            scp -r -o StrictHostKeyChecking=no ~/RedditSummarizer/src ubuntu@18.233.158.18:
 
 workflows:
   version: 2
