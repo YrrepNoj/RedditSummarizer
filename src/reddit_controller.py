@@ -1,37 +1,45 @@
-import praw
+#!/usr/bin/env python
+"""Utility made using the PRAW library to get saved Reddit Submissions from a users account."""
+
 import logging.config
 import os
+
+import praw
 import smmry_wrapper
 
-logging.basicConfig(filename="app.log", filemode="w", format="%(asctime)s - %(filename)s - %(levelname)s - %(message)s",
+logging.basicConfig(filename="app.log", filemode="a",
+                    format="%(asctime)s - %(filename)s - %(levelname)s - %(message)s",
                     level=logging.INFO, datefmt="%d-%b-%y %H:%M:%S")
-def getRedditClient():
-    redditUsername = os.environ.get('REDDIT_USERNAME')
-    redditPassword = os.environ.get('REDDIT_PASSWORD')
-    redditUserAgent = os.environ.get('REDDIT_USER_AGENT')
-    redditClientSecret = os.environ.get('REDDIT_CLIENT_SECRET')
-    redditClientID = os.environ.get('REDDIT_CLIENT_ID')
 
-    logging.info("Logged in as user (%s).." % redditUsername)
-    redditClient = praw.Reddit(client_id=redditClientID,
-                               client_secret=redditClientSecret,
-                               password=redditPassword,
-                               user_agent=redditUserAgent,
-                               username=redditUsername)
-    return redditClient
 
-#TODO: Add remaining api calls to the end of the digest
-def processSavedRedditSubmission(redditClient, recentlyViewed):
+def get_reddit_client():
+    """Utility to get a Reddit Client"""
+    reddit_username = os.environ.get('REDDIT_USERNAME')
+    reddit_password = os.environ.get('REDDIT_PASSWORD')
+    reddit_user_agent = os.environ.get('REDDIT_USER_AGENT')
+    reddit_client_secret = os.environ.get('REDDIT_CLIENT_SECRET')
+    reddit_client_id = os.environ.get('REDDIT_CLIENT_ID')
 
+    logging.info("Logged in as user (%s).." % reddit_username)
+    reddit_client = praw.Reddit(client_id=reddit_client_id,
+                                client_secret=reddit_client_secret,
+                                password=reddit_password,
+                                user_agent=reddit_user_agent,
+                                username=reddit_username)
+    return reddit_client
+
+
+def process_saved_reddit_submission(reddit_client, recently_viewed):
+    """Utility to get a list of Reddit Submissions that have been saved by the client"""
     digest = ""
-    touchedSubmissions = []
-    unsummarizedSubmissions = []
-    for submission in redditClient.redditor(redditClient.user.me().name).saved(limit=25):
-        if submission.id in recentlyViewed:
+    touched_submissions = []
+    unsummarized_submissions = []
+    for submission in reddit_client.redditor(reddit_client.user.me().name).saved(limit=25):
+        if submission.id in recently_viewed:
             logging.info("Reached a submission that we have processed before. Stopping now.")
             break
 
-        touchedSubmissions.append(submission.id)
+        touched_submissions.append(submission.id)
         if isinstance(submission, praw.models.Submission):
             summarization = None
 
@@ -40,45 +48,45 @@ def processSavedRedditSubmission(redditClient, recentlyViewed):
 
             if submission.is_self and len(submission.selftext.split()) > 400:
                 logging.info("Summarizing a selfpost")
-                summarization = smmry_wrapper.summerizeURL(submission.url)
+                summarization = smmry_wrapper.summerize_url(submission.url)
 
             elif not submission.is_self:
                 logging.info("summarizing a linkpost")
-                summarization = smmry_wrapper.summerizeURL(submission.url)
+                summarization = smmry_wrapper.summerize_url(submission.url)
             else:
                 # A selfpost that was not long enough for us to consider summarizing
-                unsummarizedSubmissions.append(submission)
+                unsummarized_submissions.append(submission)
 
-            if(summarization):
-                if(summarization.getErrorCode()):
+            if summarization:
+                if summarization.get_error_code():
                     logging.warning("Unable to summarize submission %s : %s. Error Code: %s",
-                                    submission.shortlink, submission.title, summarization.getErrorCode())
-                    unsummarizedSubmissions.append(submission)
+                                    submission.shortlink, submission.title,
+                                    summarization.get_error_code())
+                    unsummarized_submissions.append(submission)
                     continue
                 digest += "Reddit Submission Title: " + submission.title
-                articalTitle = summarization.getTitle()
-                if articalTitle:
-                    digest += "\nArticle Title: " + articalTitle
-                percentageReduced = summarization.getPercentageReduced()
-                if percentageReduced:
-                    digest += "\nText Reduced By: " + percentageReduced
-                summarizedText = summarization.getSummarizedText()
+                artical_title = summarization.get_title()
+                if artical_title:
+                    digest += "\nArticle Title: " + artical_title
+                percentage_reduced = summarization.get_percentage_reduced()
+                if percentage_reduced:
+                    digest += "\nText Reduced By: " + percentage_reduced
+                summarized_text = summarization.get_summarized_text()
 
                 digest += "\nReddit Link: " + submission.shortlink
 
-                if(not submission.is_self):
+                if not submission.is_self:
                     digest += "\nArticle Link: " + submission.url
 
-                if summarizedText:
-                    sentences = summarizedText.split('\n ')
-                    digest += "\n" + summarizedText
-                digest += "\n" + "---------------------------------------------------------------\n\n"
+                if summarized_text:
+                    digest += "\n" + summarized_text
+                digest += "\n" + "------------------------------------------------------------\n\n"
             else:
                 logging.warning("Unable to summarize submission %s", submission.title)
 
     # Add all of the unsummarized submissions to the end of the list
-    if len(unsummarizedSubmissions) > 0:
+    if unsummarized_submissions:
         digest += "\n\n--------------Unsummarized Submissions--------------"
-        for submission in unsummarizedSubmissions:
+        for submission in unsummarized_submissions:
             digest += "\n" + submission.title + "  :  " + submission.shortlink
-    return digest, touchedSubmissions
+    return digest, touched_submissions

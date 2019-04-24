@@ -1,24 +1,32 @@
-import requests
+#!/usr/bin/env python
+"""Simple wrapper around the SMMRY_API. This allows us to get a Summarization from an article
+given its URL """
+
 import os
+
+import requests
 from summarization import Summarization
 
-apiKey = os.environ['SMMRY_API_KEY']
-endpoint = "http://api.smmry.com/"
-
-def buildURL(apiKey, articalURL=None):
-    postURL = endpoint+"&SM_LENGTH=10&SM_API_KEY="
-    postURL += apiKey
-
-    if articalURL:
-        postURL += "&SM_WITH_BREAK&SM_URL="
-        postURL += articalURL
-
-    return postURL
+API_KEY = os.environ['SMMRY_API_KEY']
+ENDPOINT = "http://api.smmry.com/"
 
 
-def summerizeURL(articalURL):
-    endpointURL = buildURL(apiKey, articalURL)
-    response = requests.post(endpointURL)
+def build_url(api_key, artical_url=None):
+    """returns the endpoint to summarize a given article with the SMMRY_API"""
+    post_url = ENDPOINT + "&SM_LENGTH=10&SM_API_KEY="
+    post_url += api_key
+
+    if artical_url:
+        post_url += "&SM_WITH_BREAK&SM_URL="
+        post_url += artical_url
+
+    return post_url
+
+
+def summerize_url(artical_url):
+    """Returns the Summarization of an article via the SMMRY_API"""
+    endpoint_url = build_url(API_KEY, artical_url)
+    response = requests.post(endpoint_url)
     response.close()
     smmry_dict = response.json()
 
