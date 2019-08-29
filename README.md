@@ -17,15 +17,17 @@ This project was designed to help avoid drowning in the vast sea of information 
 
 ### Getting Started
 * This project will require:
-- Python ?.?
-- Praw (https://praw.readthedocs.io/en/latest/)
+   - A gmail account with [less secure apps enabled](https://support.google.com/accounts/answer/6010255?hl=en)
+   - Python ?.?
+   - [Praw](https://praw.readthedocs.io/en/latest/): A Python Reddit API Wrapper
+   - A [Reddit](https://reddit.com) account and a [Reddit Application](https://www.reddit.com/prefs/apps) with a Client Secret and a Client ID
 * The program will look for environment variables for the log in credentials. You will need to configure:
 - $VARIABLE_ONE
 * How it works???
 
 ### Retrospective
 * **Lessons Learned**
-   - First time hitting an external endpoint with Python!
+   - First time hitting an external endpoint with Python! It was supprisingly a lot easier than I thought it would be.
 * **Limitations and known issues**
    - This tool isn't very scaleable in terms of the number of users.
    - Relies on the SMMRY API instead of using an in-house summerization API.
