@@ -2,10 +2,9 @@
 """Creates a digest from a users saved Reddit submissions & emails digest to user"""
 
 import logging.config
-import os
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-
+from account_info import *
 import gmail_client
 import reddit_controller
 
@@ -13,11 +12,10 @@ logging.basicConfig(filename="app.log", filemode="a",
                     format="%(asctime)s - %(filename)s - %(levelname)s - %(message)s",
                     level=logging.INFO, datefmt="%d-%b-%y %H:%M:%S")
 
-GMAIL_USERNAME = os.environ.get('GMAIL_USERNAME')
-GMAIL_PASSWORD = os.environ.get('GMAIL_PASSWORD')
-GMAIL_RECEIVER_USERNAME = os.environ.get('GMAIL_RECEIVER_USERNAME')
+GMAIL_USERNAME = gmailUsername
+GMAIL_PASSWORD = gmailPassword
+GMAIL_RECEIVER_USERNAME = gmailReceiverUsername
 
-# GMAIL_CLIENT = get_mail_client(GMAIL_USERNAME, GMAIL_PASSWORD)
 GMAIL_CLIENT = gmail_client.get_gmail_client(GMAIL_USERNAME, GMAIL_PASSWORD)
 REDDIT_CLIENT = reddit_controller.get_reddit_client()
 

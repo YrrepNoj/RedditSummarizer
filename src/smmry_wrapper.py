@@ -2,12 +2,11 @@
 """Simple wrapper around the SMMRY_API. This allows us to get a Summarization from an article
 given its URL """
 
-import os
-
 import requests
 from summarization import Summarization
+from account_info import smmryApiKey
 
-API_KEY = os.environ['SMMRY_API_KEY']
+API_KEY = smmryApiKey
 ENDPOINT = "http://api.smmry.com/"
 
 

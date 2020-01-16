@@ -2,10 +2,10 @@
 """Utility made using the PRAW library to get saved Reddit Submissions from a users account."""
 
 import logging.config
-import os
 
 import praw
 import smmry_wrapper
+from account_info import *
 
 logging.basicConfig(filename="app.log", filemode="a",
                     format="%(asctime)s - %(filename)s - %(levelname)s - %(message)s",
@@ -14,11 +14,11 @@ logging.basicConfig(filename="app.log", filemode="a",
 
 def get_reddit_client():
     """Utility to get a Reddit Client"""
-    reddit_username = os.environ.get('REDDIT_USERNAME')
-    reddit_password = os.environ.get('REDDIT_PASSWORD')
-    reddit_user_agent = os.environ.get('REDDIT_USER_AGENT')
-    reddit_client_secret = os.environ.get('REDDIT_CLIENT_SECRET')
-    reddit_client_id = os.environ.get('REDDIT_CLIENT_ID')
+    reddit_username = redditUsername
+    reddit_password = redditPassword
+    reddit_user_agent = redditUserAgent
+    reddit_client_secret = redditClientSecret
+    reddit_client_id = redditClientID
 
     logging.info("Logged in as user (%s).." % reddit_username)
     reddit_client = praw.Reddit(client_id=reddit_client_id,
