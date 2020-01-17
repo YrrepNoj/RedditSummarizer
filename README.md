@@ -12,18 +12,22 @@ The RedditSummerizer will monitor a users 'Saved' content and attempt to summeri
 This project was designed to help avoid drowning in the vast sea of information that is out there on Reddit. I found myself finding so much content that I wanted to consume but didn't have enough time to read at the moment. With this tool, I am now able to read a short summary of the content I found interesting and go back to read the original article if I found the topic useful or interesting.
 
 ### Examples
-* Example Usages, screenshots / links to videos / demos
-- high level
+The following image is an example digest a user would receive:
+![Digest Example](https://imgur.com/20p5kqw.jpg)
+
+
+
+The following image is an example resuult when a user has no new saved posts since the last time the digest script has ran:
+![Emptry Digest]( https://imgur.com/zfx4PG7.jpg)
 
 ### Getting Started
 * This project will require:
    - A gmail account with [less secure apps enabled](https://support.google.com/accounts/answer/6010255?hl=en)
-   - Python ?.?
+   - Python 3.5+
    - [Praw](https://praw.readthedocs.io/en/latest/): A Python Reddit API Wrapper
    - A [Reddit](https://reddit.com) account and a [Reddit Application](https://www.reddit.com/prefs/apps) with a Client Secret and a Client ID
-* The program will look for environment variables for the log in credentials. You will need to configure:
-- $VARIABLE_ONE
-* How it works???
+* Set up a cron job to execute the main.py for daily digests
+* Start saving articles to your Reddit account for processing!
 
 ### Retrospective
 * **Lessons Learned**
